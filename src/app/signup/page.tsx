@@ -42,7 +42,7 @@ export default function SignupPage() {
     };
 
     const handleGoogleLogin = () => {
-        window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_API}/auth/google/login`;
+        window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_API || "http://127.0.0.1:8000/api/v1"}/auth/google/login`;
     };
 
     return (

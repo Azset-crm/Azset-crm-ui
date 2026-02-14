@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_APIs;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_API;
 
 export const api = axios.create({
     baseURL: API_URL,
