@@ -161,7 +161,7 @@ export default function AssetsPage() {
         const sanitizedData = Object.fromEntries(
             Object.entries(newAsset)
                 .filter(([key]) => !fieldsToExclude.includes(key)) // Exclude read-only and classification fields (if unchanged)
-                .map(([key, value]) => {
+                .map(([key, value]): [string, string | number | null] => {
                     // Handle numbers that might be empty strings
                     if (['po_quantity', 'po_value', 'grn_quantity', 'grn_value', 'invoice_quantity', 'invoice_value', 'insurance_value'].includes(key)) {
                         return [key, (value === "" || value === null) ? null : Number(value)];

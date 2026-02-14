@@ -11,7 +11,7 @@ const navLinks = [
     { label: "Solutions", href: "/solutions" },
     { label: "About", href: "/about" },
     { label: "Blogs", href: "/blog" },
-    { label: "Contact Us", href: "/contact" },
+    { label: "Blogs", href: "/blog" },
 ];
 
 export function SiteHeader() {
@@ -20,8 +20,7 @@ export function SiteHeader() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const pathname = usePathname();
 
-    // Hide header on dashboard routes
-    if (pathname?.startsWith("/dashboard")) return null;
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -34,6 +33,9 @@ export function SiteHeader() {
 
         return () => window.removeEventListener("scroll", handleScroll);
     }, [pathname]); // Re-check on route change
+
+    // Hide header on dashboard routes
+    if (pathname?.startsWith("/dashboard")) return null;
 
     return (
         <header
