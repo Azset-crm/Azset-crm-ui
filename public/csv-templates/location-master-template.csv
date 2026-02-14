@@ -1,0 +1,22 @@
+Country,State,City,Unit,Name,Address,Floor,Room,Zone,Parent Location,Latitude,Longitude
+United States,California,San Francisco,Headquarters,SF Headquarters,123 Market Street San Francisco CA 94105,Multiple,,,37.7749,-122.4194
+United States,California,San Francisco,Headquarters,SF HQ - Executive Floor,123 Market Street Floor 20 San Francisco CA 94105,20,,,SF Headquarters,37.7749,-122.4194
+United States,California,San Francisco,Headquarters,SF HQ - IT Department,123 Market Street Floor 15 San Francisco CA 94105,15,,IT Zone,SF Headquarters,37.7749,-122.4194
+United States,California,San Francisco,Headquarters,SF HQ - Data Center,123 Market Street Basement Level B1 San Francisco CA 94105,B1,,Secure Zone,SF Headquarters,37.7749,-122.4194
+United States,New York,New York,East Coast Office,NYC East Coast Office,456 Broadway New York NY 10013,Multiple,,,40.7128,-74.0060
+United States,New York,New York,East Coast Office,NYC - Sales Department,456 Broadway Floor 10 New York NY 10013,10,,Sales Zone,NYC East Coast Office,40.7128,-74.0060
+United States,Texas,Austin,South Office,Austin South Office,789 Congress Avenue Austin TX 78701,Multiple,,,30.2672,-97.7431
+United States,Texas,Austin,South Office,Austin - Development Lab,789 Congress Avenue Floor 3 Austin TX 78701,3,,R&D Zone,Austin South Office,30.2672,-97.7431
+United States,Washington,Seattle,West Coast Branch,Seattle West Coast Branch,321 Pine Street Seattle WA 98101,Multiple,,,47.6062,-122.3321
+United States,Washington,Seattle,West Coast Branch,Seattle - Engineering,321 Pine Street Floor 8 Seattle WA 98101,8,,Engineering Zone,Seattle West Coast Branch,47.6062,-122.3321
+United States,Illinois,Chicago,Midwest Office,Chicago Midwest Office,654 Lake Shore Drive Chicago IL 60611,Multiple,,,41.8781,-87.6298
+United States,Illinois,Chicago,Midwest Office,Chicago - Operations Center,654 Lake Shore Drive Floor 12 Chicago IL 60611,12,,Operations Zone,Chicago Midwest Office,41.8781,-87.6298
+United States,Florida,Miami,Southeast Office,Miami Southeast Office,987 Ocean Drive Miami FL 33139,Multiple,,,25.7617,-80.1918
+United States,Georgia,Atlanta,Distribution Center,Atlanta Distribution Center,1234 Peachtree Industrial Blvd Atlanta GA 30341,Ground,,Warehouse Zone A,,33.7490,-84.3880
+United States,Georgia,Atlanta,Distribution Center,Atlanta DC - Storage Area B,1234 Peachtree Industrial Blvd Section B Atlanta GA 30341,Ground,,Warehouse Zone B,Atlanta Distribution Center,33.7490,-84.3880
+Canada,Ontario,Toronto,Canadian Office,Toronto Canadian Office,100 King Street West Toronto ON M5X 1C7,Multiple,,,43.6532,-79.3832
+Canada,British Columbia,Vancouver,Pacific Office,Vancouver Pacific Office,200 Granville Street Vancouver BC V6C 1S4,Multiple,,,49.2827,-123.1207
+United Kingdom,England,London,European Headquarters,London European HQ,25 Bank Street Canary Wharf London E14 5JP,Multiple,,,51.5074,-0.1278
+Germany,Bavaria,Munich,EMEA Office,Munich EMEA Office,Maximilianstraße 35 80539 München Germany,Multiple,,,48.1351,11.5820
+Singapore,Central Region,Singapore,APAC Headquarters,Singapore APAC HQ,1 Raffles Place Singapore 048616,Multiple,,,1.3521,103.8198
+Japan,Tokyo,Tokyo,Japan Office,Tokyo Japan Office,1-1-1 Marunouchi Chiyoda City Tokyo 100-6390,Multiple,,,35.6762,139.6503

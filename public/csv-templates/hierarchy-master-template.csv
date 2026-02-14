@@ -1,0 +1,31 @@
+Category,SubCategory,AssetGroup,AssetType,Make,Model,Description
+IT Equipment,Computers,Desktop Computers,Workstation,Dell,OptiPlex 7090,High-performance desktop for office use
+IT Equipment,Computers,Laptops,Business Laptop,HP,EliteBook 840 G8,Professional laptop with security features
+IT Equipment,Networking,Routers,Enterprise Router,Cisco,ISR 4331,Enterprise-grade router with advanced security
+IT Equipment,Networking,Switches,Managed Switch,Cisco,Catalyst 9200,24-port managed switch with PoE
+Furniture,Office Furniture,Desks,Executive Desk,Herman Miller,Ratio Executive Desk,Premium executive desk with storage
+Furniture,Office Furniture,Chairs,Ergonomic Chair,Herman Miller,Aeron,Fully adjustable ergonomic office chair
+Furniture,Office Furniture,Storage,Filing Cabinet,Steelcase,4-Drawer Lateral File,Locking lateral filing cabinet
+Vehicles,Company Vehicles,Sedans,Mid-Size Sedan,Toyota,Camry 2024,Reliable mid-size sedan for business use
+Vehicles,Company Vehicles,SUVs,Compact SUV,Honda,CR-V 2024,Versatile compact SUV for field operations
+Machinery,Production Equipment,CNC Machines,CNC Mill,Haas,VF-2,Vertical machining center for precision parts
+Machinery,Production Equipment,3D Printers,Industrial 3D Printer,Stratasys,Fortus 450mc,Production-grade FDM 3D printer
+Machinery,Material Handling,Forklifts,Electric Forklift,Toyota,8FBRE18,1800kg capacity electric forklift
+Electronics,Audio Visual,Projectors,Conference Room Projector,Epson,PowerLite L615U,High-brightness laser projector
+Electronics,Audio Visual,Displays,Interactive Display,Samsung,Flip 2 85",85-inch interactive whiteboard display
+Electronics,Communication,Phone Systems,VoIP Phone,Cisco,IP Phone 8865,Video-enabled VoIP desk phone
+Tools,Hand Tools,Power Drills,Cordless Drill,DeWalt,DCD996B,20V MAX brushless hammer drill
+Tools,Hand Tools,Impact Drivers,Cordless Impact Driver,Milwaukee,2853-20,M18 FUEL impact driver
+Tools,Measuring Tools,Laser Levels,Rotary Laser Level,Bosch,GRL 300 HVG,Self-leveling rotary laser level
+Medical Equipment,Diagnostic Equipment,Blood Pressure Monitors,Digital BP Monitor,Omron,HEM-907XL,Professional digital blood pressure monitor
+Medical Equipment,Patient Care,Hospital Beds,Electric Hospital Bed,Hill-Rom,Advanta 2,Fully electric hospital bed with side rails
+Laboratory Equipment,Analytical Instruments,Microscopes,Digital Microscope,Nikon,Eclipse Ci-L,LED illuminated clinical microscope
+Laboratory Equipment,Testing Equipment,Spectrophotometers,UV-Vis Spectrophotometer,Thermo Fisher,Evolution 201,UV-Visible spectrophotometer
+Safety Equipment,PPE,Hard Hats,Safety Helmet,3M,H-700 Series,ANSI Z89.1 compliant safety helmet
+Safety Equipment,PPE,Safety Glasses,Safety Eyewear,Uvex,Genesis,Anti-fog safety glasses with side shields
+Office Equipment,Printers,Multifunction Printers,Color MFP,Canon,imageRUNNER ADVANCE C5560i,Color multifunction printer with scan to email
+Office Equipment,Scanners,Document Scanners,High-Speed Scanner,Fujitsu,fi-7160,Document scanner - 60 ppm
+Software,Operating Systems,Desktop OS,Windows,Microsoft,Windows 11 Pro,Professional desktop operating system
+Software,Productivity,Office Suite,Office Suite,Microsoft,Office 365 Business Premium,Cloud-based productivity suite
+Software,Design,CAD Software,3D CAD,Autodesk,AutoCAD 2024,Professional 3D design software
+Climate Control,HVAC,Air Conditioners,Split AC Unit,Daikin,FTXS15LVJU,Wall-mounted ductless split AC system
