@@ -42,29 +42,26 @@ export function LocationHierarchySelect({ onComplete, initialLocationId }: Locat
 
                 // Handle Pre-fill if editing
                 if (initialLocationId) {
-                    // We need a way to reverse-lookup from ID to hierarchy. 
-                    // Since the API doesn't give us the hierarchy directly from ID without a specific endpoint,
-                    // we might need to fetch the specific location master.
+                    // Fetch the actual Location record by UUID
                     try {
-                        const locMaster = await masterDataService.getLocationMasterById(initialLocationId);
-                        if (locMaster) {
+                        const location = await masterDataService.getLocationById(initialLocationId);
+                        if (location) {
                             setSelections({
-                                country: locMaster.country,
-                                state: locMaster.state,
-                                city: locMaster.city,
-                                unit: locMaster.unit,
-                                name: locMaster.name,
-                                locationId: locMaster.location_id
+                                country: location.country,
+                                state: location.state,
+                                city: location.city,
+                                unit: location.unit,
+                                name: location.name,
+                                locationId: location.id // Use UUID
                             });
 
                             // Trigger options population for lower levels
-                            // Note: This is a bit manual, but necessary given the data structure
                             setOptions(prev => ({
                                 ...prev,
-                                states: data.states[locMaster.country] || [],
-                                cities: data.cities[`${locMaster.country}|${locMaster.state}`] || [],
-                                units: data.units[`${locMaster.country}|${locMaster.state}|${locMaster.city}`] || [],
-                                names: data.names[`${locMaster.country}|${locMaster.state}|${locMaster.city}|${locMaster.unit}`] || []
+                                states: data.states[location.country] || [],
+                                cities: data.cities[`${location.country}|${location.state}`] || [],
+                                units: data.units[`${location.country}|${location.state}|${location.city}`] || [],
+                                names: data.names[`${location.country}|${location.state}|${location.city}|${location.unit}`] || []
                             }));
                         }
                     } catch (e) {

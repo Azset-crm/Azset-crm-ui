@@ -157,7 +157,7 @@ export default function AssetsPage() {
             fieldsToExclude.push(...classificationFields);
         }
 
-        // Sanitize data: Convert empty strings to null, handle numbers, and remove null values
+        // Sanitize data: Convert empty strings to null, handle numbers, dates, and remove problematic null values
         const sanitizedData = Object.fromEntries(
             Object.entries(newAsset)
                 .filter(([key]) => !fieldsToExclude.includes(key)) // Exclude read-only and classification fields (if unchanged)
@@ -165,6 +165,10 @@ export default function AssetsPage() {
                     // Handle numbers that might be empty strings
                     if (['po_quantity', 'po_value', 'grn_quantity', 'grn_value', 'invoice_quantity', 'invoice_value', 'insurance_value'].includes(key)) {
                         return [key, (value === "" || value === null) ? null : Number(value)];
+                    }
+                    // Handle date fields - convert empty strings to null
+                    if (['po_date', 'grn_date', 'invoice_date', 'warranty_start_date', 'warranty_end_date', 'insurance_start_date', 'insurance_end_date'].includes(key)) {
+                        return [key, (value === "" || value === null) ? null : value];
                     }
                     // Convert empty strings to null
                     if (value === "") return [key, null];
@@ -176,11 +180,19 @@ export default function AssetsPage() {
                     if (isEditing && (value === null || value === undefined)) {
                         return false;
                     }
-                    // For creates, keep null values but remove empty UUID/email fields
+                    // For creates, remove null values for fields that can cause validation errors
                     if (!isEditing) {
-                        const uuidFields = ['location_id'];
-                        const emailFields = ['vendor_email', 'warranty_vendor_email'];
-                        if ((uuidFields.includes(key) || emailFields.includes(key)) && value === null) {
+                        const fieldsToRemoveIfNull = [
+                            'location_id', // UUID field
+                            'vendor_email', 'warranty_vendor_email', // Email fields
+                            'po_date', 'grn_date', 'invoice_date', // Date fields
+                            'warranty_start_date', 'warranty_end_date',
+                            'insurance_start_date', 'insurance_end_date',
+                            'po_quantity', 'po_value', 'grn_quantity', 'grn_value', // Number fields
+                            'invoice_quantity', 'invoice_value', 'insurance_value',
+                            'category', 'sub_category', 'asset_group', 'asset_type', 'make', 'model', 'description' // Classification fields
+                        ];
+                        if (fieldsToRemoveIfNull.includes(key) && (value === null || value === undefined)) {
                             return false;
                         }
                     }
@@ -203,7 +215,29 @@ export default function AssetsPage() {
         } catch (err: any) {
             console.error("Failed to save asset", err);
             console.error("Error response:", err?.response?.data);
-            alert(`Error saving asset: ${err?.response?.data?.detail || err.message}`);
+            console.error("Full error detail:", JSON.stringify(err?.response?.data?.detail, null, 2));
+            
+            // Extract validation errors if available
+            let errorMessage = "Error saving asset";
+            if (err?.response?.data?.detail) {
+                const detail = err.response.data.detail;
+                if (Array.isArray(detail)) {
+                    // Pydantic validation errors
+                    const errors = detail.map((e: any) => {
+                        const location = e.loc ? e.loc.join(' -> ') : 'unknown';
+                        const message = e.msg || 'validation error';
+                        const type = e.type || '';
+                        return `Field: ${location}\nError: ${message}\nType: ${type}`;
+                    }).join('\n\n');
+                    errorMessage = `Validation errors:\n\n${errors}`;
+                } else if (typeof detail === 'string') {
+                    errorMessage = detail;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            alert(errorMessage);
         }
     };
 

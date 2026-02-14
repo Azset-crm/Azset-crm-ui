@@ -11,7 +11,6 @@ const navLinks = [
     { label: "Solutions", href: "/solutions" },
     { label: "About", href: "/about" },
     { label: "Blogs", href: "/blog" },
-    { label: "Blogs", href: "/blog" },
 ];
 
 export function SiteHeader() {

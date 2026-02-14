@@ -102,6 +102,11 @@ export const masterDataService = {
         return res.data;
     },
 
+    getLocationById: async (locationId: string) => {
+        const res = await api.get(`/locations/${locationId}`);
+        return res.data;
+    },
+
     createLocationMaster: async (data: any) => {
         const res = await api.post("/masters/location-masters", data);
         return res.data;
