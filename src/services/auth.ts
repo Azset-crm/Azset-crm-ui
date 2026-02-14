@@ -79,7 +79,7 @@ export const authService = {
 
     // Google OAuth
     googleLogin: () => {
-        window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/auth/google/login`;
+        window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_API || 'http://127.0.0.1:8000/api/v1'}/auth/google/login`;
     },
 
     googleCallback: async (code: string, state: string) => {
