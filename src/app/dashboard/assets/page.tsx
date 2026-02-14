@@ -5,6 +5,7 @@ import { Search, MapPin, Zap, AlertCircle, CheckCircle2, Plus, X, FileDown, Arro
 import { assetService } from "@/services/assets";
 import { masterDataService } from "@/services/master";
 import { HierarchySelect } from "@/components/dashboard/hierarchy-select";
+import { LocationHierarchySelect } from "@/components/dashboard/location-hierarchy-select";
 import { TemplateDownload } from "@/components/dashboard/template-download";
 
 export default function AssetsPage() {
@@ -12,7 +13,7 @@ export default function AssetsPage() {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
-    
+
     // View Details State
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [viewingAsset, setViewingAsset] = useState<any>(null);
@@ -111,6 +112,7 @@ export default function AssetsPage() {
 
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
+    const [originalModelId, setOriginalModelId] = useState<string | null>(null);
 
     const resetForm = () => {
         setNewAsset({
@@ -125,6 +127,7 @@ export default function AssetsPage() {
         });
         setIsEditing(false);
         setEditId(null);
+        setOriginalModelId(null);
     };
 
     const handleCreateAsset = async (e: React.FormEvent) => {
@@ -139,26 +142,54 @@ export default function AssetsPage() {
         // Filter out read-only fields that shouldn't be sent to the API
         const readOnlyFields = [
             'id', 'created_at', 'updated_at', 'location',
-            'created_by_user_id', 'created_by_username', 
+            'created_by_user_id', 'created_by_username',
             'modified_by_user_id', 'modified_by_username',
             'creation_time', 'creation_by_user_id', 'creation_by_username',
             'install_time', 'install_by_user_id', 'install_by_username',
             'deploy_time', 'deploy_by_user_id', 'deploy_by_username'
         ];
 
-        // Sanitize data: Convert empty strings to null for optional fields
+        // If editing and model_id hasn't changed, exclude classification fields
+        // to prevent backend from regenerating model_id and causing Asset Master mismatch
+        const classificationFields = ['category', 'sub_category', 'asset_group', 'asset_type', 'make', 'model', 'description'];
+        const fieldsToExclude = [...readOnlyFields];
+        if (isEditing && originalModelId && newAsset.model_id === originalModelId) {
+            fieldsToExclude.push(...classificationFields);
+        }
+
+        // Sanitize data: Convert empty strings to null, handle numbers, and remove null values
         const sanitizedData = Object.fromEntries(
             Object.entries(newAsset)
-                .filter(([key]) => !readOnlyFields.includes(key)) // Exclude read-only fields
+                .filter(([key]) => !fieldsToExclude.includes(key)) // Exclude read-only and classification fields (if unchanged)
                 .map(([key, value]) => {
-                    if (value === "") return [key, null];
                     // Handle numbers that might be empty strings
                     if (['po_quantity', 'po_value', 'grn_quantity', 'grn_value', 'invoice_quantity', 'invoice_value', 'insurance_value'].includes(key)) {
-                        return [key, value === "" ? null : Number(value)];
+                        return [key, (value === "" || value === null) ? null : Number(value)];
                     }
+                    // Convert empty strings to null
+                    if (value === "") return [key, null];
                     return [key, value];
                 })
+                .filter(([key, value]) => {
+                    // For updates, remove all null values - backend uses exclude_unset=True
+                    // Only send fields that actually have values
+                    if (isEditing && (value === null || value === undefined)) {
+                        return false;
+                    }
+                    // For creates, keep null values but remove empty UUID/email fields
+                    if (!isEditing) {
+                        const uuidFields = ['location_id'];
+                        const emailFields = ['vendor_email', 'warranty_vendor_email'];
+                        if ((uuidFields.includes(key) || emailFields.includes(key)) && value === null) {
+                            return false;
+                        }
+                    }
+                    return true;
+                })
         );
+
+        // Debug logging
+        console.log("Sanitized data being sent to API:", JSON.stringify(sanitizedData, null, 2));
 
         try {
             if (isEditing && editId) {
@@ -169,9 +200,10 @@ export default function AssetsPage() {
             setShowCreateModal(false);
             loadAssets();
             resetForm();
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to save asset", err);
-            alert("Error saving asset. Check console.");
+            console.error("Error response:", err?.response?.data);
+            alert(`Error saving asset: ${err?.response?.data?.detail || err.message}`);
         }
     };
 
@@ -219,6 +251,7 @@ export default function AssetsPage() {
         setNewAsset({ ...newAsset, ...sanitizedAsset });
         setIsEditing(true);
         setEditId(asset.id);
+        setOriginalModelId(asset.model_id); // Store original model_id to detect changes
         setShowCreateModal(true);
     };
 
@@ -361,9 +394,9 @@ export default function AssetsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <button 
-                                            onClick={() => { setViewingAsset(asset); setShowDetailsModal(true); }} 
-                                            className="p-2 hover:bg-blue-500/20 rounded-full text-white/40 hover:text-blue-400 transition-colors" 
+                                        <button
+                                            onClick={() => { setViewingAsset(asset); setShowDetailsModal(true); }}
+                                            className="p-2 hover:bg-blue-500/20 rounded-full text-white/40 hover:text-blue-400 transition-colors"
                                             title="View Details"
                                         >
                                             <Eye className="w-4 h-4" />
@@ -450,7 +483,7 @@ export default function AssetsPage() {
                                         {/* Status Fields */}
                                         <div>
                                             <label className="block text-xs font-semibold text-white/60 mb-2">Status *</label>
-                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" value={newAsset.status} onChange={(e) => setNewAsset({ ...newAsset, status: e.target.value })} required>
+                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" value={newAsset.status || "active"} onChange={(e) => setNewAsset({ ...newAsset, status: e.target.value })} required>
                                                 <option value="active">Active</option>
                                                 <option value="inactive">Inactive</option>
                                                 <option value="scrap">Scrap</option>
@@ -460,23 +493,22 @@ export default function AssetsPage() {
 
                                         <div>
                                             <label className="block text-xs font-semibold text-white/60 mb-2">Lifecycle Stage *</label>
-                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" value={newAsset.asset_status} onChange={(e) => setNewAsset({ ...newAsset, asset_status: e.target.value })} required>
+                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" value={newAsset.asset_status || "creation"} onChange={(e) => setNewAsset({ ...newAsset, asset_status: e.target.value })} required>
                                                 <option value="creation">Creation</option>
                                                 <option value="install">Install</option>
                                                 <option value="deploy">Deploy</option>
                                             </select>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-xs font-semibold text-white/60 mb-2">Location *</label>
-                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" value={newAsset.location_id} onChange={(e) => setNewAsset({ ...newAsset, location_id: e.target.value })} required>
-                                                <option value="">Select Location</option>
-                                                {locations.map(loc => <option key={loc.id} value={loc.id}>{loc.name} ({loc.city})</option>)}
-                                            </select>
+                                        <div className="col-span-1 md:col-span-3">
+                                            <LocationHierarchySelect
+                                                onComplete={(locationId) => setNewAsset({ ...newAsset, location_id: locationId })}
+                                                initialLocationId={newAsset.location_id}
+                                            />
                                         </div>
                                         <div>
                                             <label className="block text-xs font-semibold text-white/60 mb-2">Ownership</label>
-                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" value={newAsset.ownership} onChange={(e) => setNewAsset({ ...newAsset, ownership: e.target.value })}>
+                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" value={newAsset.ownership || "owned"} onChange={(e) => setNewAsset({ ...newAsset, ownership: e.target.value })}>
                                                 <option value="owned">Owned</option>
                                                 <option value="rented">Rented</option>
                                                 <option value="leased">Leased</option>
@@ -502,7 +534,7 @@ export default function AssetsPage() {
                                         <label className="block text-xs font-semibold text-white/60 mb-2">Currency</label>
                                         <select
                                             className="w-full md:w-1/3 bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white outline-none text-sm"
-                                            value={newAsset.currency}
+                                            value={newAsset.currency || "USD"}
                                             onChange={(e) => setNewAsset({ ...newAsset, currency: e.target.value })}
                                         >
                                             <option value="USD">USD - US Dollar</option>
@@ -569,7 +601,7 @@ export default function AssetsPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-xs font-semibold text-white/60 mb-2">Asset Warranty</label>
-                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white outline-none text-sm" value={newAsset.asset_warranty} onChange={(e) => setNewAsset({ ...newAsset, asset_warranty: e.target.value })}>
+                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white outline-none text-sm" value={newAsset.asset_warranty || "no"} onChange={(e) => setNewAsset({ ...newAsset, asset_warranty: e.target.value })}>
                                                 <option value="no">No</option>
                                                 <option value="yes">Yes</option>
                                             </select>
@@ -586,7 +618,7 @@ export default function AssetsPage() {
                                         )}
                                         <div>
                                             <label className="block text-xs font-semibold text-white/60 mb-2">AMC</label>
-                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white outline-none text-sm" value={newAsset.amc} onChange={(e) => setNewAsset({ ...newAsset, amc: e.target.value })}>
+                                            <select className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white outline-none text-sm" value={newAsset.amc || "no"} onChange={(e) => setNewAsset({ ...newAsset, amc: e.target.value })}>
                                                 <option value="no">No</option>
                                                 <option value="yes">Yes</option>
                                             </select>
@@ -625,7 +657,7 @@ export default function AssetsPage() {
                             <Zap className="w-8 h-8 text-emerald-400" />
                             Asset Details - {viewingAsset.tag_id}
                         </h2>
-                        
+
                         <div className="space-y-6">
                             {/* Core Information */}
                             <div>
@@ -830,7 +862,7 @@ export default function AssetsPage() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div className="pt-6 flex justify-end gap-3 border-t border-white/10 mt-6">
                             <button onClick={() => setShowDetailsModal(false)} className="bg-white text-black px-8 py-3 rounded-xl font-bold hover:bg-neutral-200 transition-colors">
                                 Close

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { masterDataService } from "@/services/master";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 
 interface HierarchySelectProps {
     initialData?: {
@@ -176,28 +177,17 @@ export function HierarchySelect({ onComplete, initialData }: HierarchySelectProp
         onChange: (val: string) => void,
         options: string[],
         placeholder: string,
-        listId: string,
         disabled: boolean = false
     ) => (
-        <div className="relative">
+        <div>
             <label className="block text-xs font-semibold text-white/60 mb-2">{label}</label>
-            <div className="relative">
-                <input
-                    type="text"
-                    list={listId}
-                    className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:border-white/40 outline-none transition-colors disabled:opacity-50"
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                />
-                <datalist id={listId}>
-                    {options.map(opt => <option key={opt} value={opt} />)}
-                </datalist>
-                {!disabled && (
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40 pointer-events-none" />
-                )}
-            </div>
+            <SearchableSelect
+                value={value}
+                onChange={onChange}
+                options={options}
+                placeholder={placeholder}
+                disabled={disabled}
+            />
         </div>
     );
 
@@ -206,17 +196,17 @@ export function HierarchySelect({ onComplete, initialData }: HierarchySelectProp
             <h3 className="text-white font-medium mb-4 text-sm uppercase tracking-wider">Asset Classification</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {renderInput("Category", selections.category, handleCategoryChange, options.categories, "Select or type Category", "list-category")}
+                {renderInput("Category", selections.category, handleCategoryChange, options.categories, "Select Category")}
 
-                {renderInput("Sub Category", selections.subCategory, handleSubCategoryChange, options.subCategories, "Select or type Sub Category", "list-subcategory", !selections.category)}
+                {renderInput("Sub Category", selections.subCategory, handleSubCategoryChange, options.subCategories, "Select Sub Category", !selections.category)}
 
-                {renderInput("Asset Group", selections.assetGroup, handleGroupChange, options.assetGroups, "Select or type Asset Group", "list-assetgroup", !selections.subCategory)}
+                {renderInput("Asset Group", selections.assetGroup, handleGroupChange, options.assetGroups, "Select Asset Group", !selections.subCategory)}
 
-                {renderInput("Asset Type", selections.assetType, handleTypeChange, options.assetTypes, "Select or type Asset Type", "list-assettype", !selections.assetGroup)}
+                {renderInput("Asset Type", selections.assetType, handleTypeChange, options.assetTypes, "Select Asset Type", !selections.assetGroup)}
 
-                {renderInput("Make (Manufacturer)", selections.make, handleMakeChange, options.makes, "Select or type Make", "list-make", !selections.assetType)}
+                {renderInput("Make (Manufacturer)", selections.make, handleMakeChange, options.makes, "Select Make", !selections.assetType)}
 
-                {renderInput("Model", selections.model, handleModelChange, options.models, "Select or type Model", "list-model", !selections.make)}
+                {renderInput("Model", selections.model, handleModelChange, options.models, "Select Model", !selections.make)}
             </div>
 
             {/* Result: Auto-generated Model ID */}
