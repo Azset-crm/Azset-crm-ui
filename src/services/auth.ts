@@ -77,25 +77,5 @@ export const authService = {
         return res.data;
     },
 
-    // Google OAuth
-    googleLogin: () => {
-        window.location.href = `${process.env.NEXT_PUBLIC_BACKEND_API || 'http://127.0.0.1:8000/api/v1'}/auth/google/login`;
-    },
 
-    googleCallback: async (code: string, state: string) => {
-        const params = new URLSearchParams({ code, state });
-        const res = await api.get(`/auth/google/callback?${params.toString()}`);
-        return res.data;
-    },
-
-    googleToken: async (token: string) => {
-        const res = await api.post("/auth/google/token", { token });
-        if (res.data.access_token) {
-            localStorage.setItem("token", res.data.access_token);
-        }
-        if (res.data.user) {
-            localStorage.setItem("user", JSON.stringify(res.data.user));
-        }
-        return res.data;
-    }
 };

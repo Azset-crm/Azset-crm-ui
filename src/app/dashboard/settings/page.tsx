@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { userService } from "@/services/users";
 import { authService } from "@/services/auth";
-import { User, Bell, Shield, Key, Save, Loader2, CheckCircle2 } from "lucide-react";
+import { User, Bell, Shield, Key, Save, Loader2, CheckCircle2, Hash } from "lucide-react";
 
 export default function SettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -120,6 +120,32 @@ export default function SettingsPage() {
                         <div>
                             <h2 className="text-xl font-medium text-white">Profile Settings</h2>
                             <p className="text-white/40 text-sm">Update your personal information.</p>
+                        </div>
+                    </div>
+
+                    {/* Account Information Display */}
+                    <div className="mb-8 p-6 bg-black/30 border border-white/5 rounded-2xl">
+                        <h3 className="text-sm font-semibold text-white/60 uppercase tracking-wider mb-4">Account Information</h3>
+                        <div className="grid md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-xs text-white/40 mb-1">Username</label>
+                                <div className="text-white font-medium">{user?.username}</div>
+                            </div>
+                            <div>
+                                <label className="block text-xs text-white/40 mb-1">Role</label>
+                                <div className="text-white font-medium capitalize">
+                                    {user?.role === 'super_admin' ? 'Super Admin' : 
+                                     user?.role === 'executive' ? 'Admin' : 
+                                     user?.role || 'User'}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs text-white/40 mb-1">User ID</label>
+                                <div className="flex items-center gap-1 text-white/80 font-mono text-sm">
+                                    <Hash className="w-3 h-3 text-white/40" />
+                                    <span>{user?.id}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, MapPin, Zap, AlertCircle, CheckCircle2, Plus, X, FileDown, ArrowRight, ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
+import { Search, MapPin, Zap, AlertCircle, CheckCircle2, Plus, X, FileDown, ArrowRight, ChevronDown, ChevronUp, Pencil, Trash2, Eye, User, Clock } from "lucide-react";
 import { assetService } from "@/services/assets";
 import { masterDataService } from "@/services/master";
 import { HierarchySelect } from "@/components/dashboard/hierarchy-select";
@@ -12,6 +12,10 @@ export default function AssetsPage() {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
+    
+    // View Details State
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [viewingAsset, setViewingAsset] = useState<any>(null);
 
     // Expanded New Asset Form State
     const [newAsset, setNewAsset] = useState({
@@ -132,16 +136,28 @@ export default function AssetsPage() {
             return;
         }
 
+        // Filter out read-only fields that shouldn't be sent to the API
+        const readOnlyFields = [
+            'id', 'created_at', 'updated_at', 'location',
+            'created_by_user_id', 'created_by_username', 
+            'modified_by_user_id', 'modified_by_username',
+            'creation_time', 'creation_by_user_id', 'creation_by_username',
+            'install_time', 'install_by_user_id', 'install_by_username',
+            'deploy_time', 'deploy_by_user_id', 'deploy_by_username'
+        ];
+
         // Sanitize data: Convert empty strings to null for optional fields
         const sanitizedData = Object.fromEntries(
-            Object.entries(newAsset).map(([key, value]) => {
-                if (value === "") return [key, null];
-                // Handle numbers that might be empty strings
-                if (['po_quantity', 'po_value', 'grn_quantity', 'grn_value', 'invoice_quantity', 'invoice_value', 'insurance_value'].includes(key)) {
-                    return [key, value === "" ? null : Number(value)];
-                }
-                return [key, value];
-            })
+            Object.entries(newAsset)
+                .filter(([key]) => !readOnlyFields.includes(key)) // Exclude read-only fields
+                .map(([key, value]) => {
+                    if (value === "") return [key, null];
+                    // Handle numbers that might be empty strings
+                    if (['po_quantity', 'po_value', 'grn_quantity', 'grn_value', 'invoice_quantity', 'invoice_value', 'insurance_value'].includes(key)) {
+                        return [key, value === "" ? null : Number(value)];
+                    }
+                    return [key, value];
+                })
         );
 
         try {
@@ -345,6 +361,13 @@ export default function AssetsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
+                                        <button 
+                                            onClick={() => { setViewingAsset(asset); setShowDetailsModal(true); }} 
+                                            className="p-2 hover:bg-blue-500/20 rounded-full text-white/40 hover:text-blue-400 transition-colors" 
+                                            title="View Details"
+                                        >
+                                            <Eye className="w-4 h-4" />
+                                        </button>
                                         <button onClick={() => handleEditAsset(asset)} className="p-2 hover:bg-white/10 rounded-full text-white/40 hover:text-white transition-colors">
                                             <Pencil className="w-4 h-4" />
                                         </button>
@@ -591,9 +614,244 @@ export default function AssetsPage() {
                 </div>
             )}
 
+            {/* View Details Modal */}
+            {showDetailsModal && viewingAsset && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-[#111] border border-white/10 rounded-3xl w-full max-w-6xl p-8 relative animate-in zoom-in-50 duration-200 max-h-[90vh] overflow-y-auto">
+                        <button onClick={() => setShowDetailsModal(false)} className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                        <h2 className="text-2xl font-serif text-white mb-6 flex items-center gap-3">
+                            <Zap className="w-8 h-8 text-emerald-400" />
+                            Asset Details - {viewingAsset.tag_id}
+                        </h2>
+                        
+                        <div className="space-y-6">
+                            {/* Core Information */}
+                            <div>
+                                <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Core Information</h3>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <AssetDetailField label="Tag ID" value={viewingAsset.tag_id} />
+                                    <AssetDetailField label="Serial No" value={viewingAsset.serial_no} />
+                                    <AssetDetailField label="Model ID" value={viewingAsset.model_id} />
+                                    <AssetDetailField label="Status" value={viewingAsset.status} badge />
+                                    <AssetDetailField label="Asset Status" value={viewingAsset.asset_status} badge />
+                                    <AssetDetailField label="Ownership" value={viewingAsset.ownership} />
+                                </div>
+                            </div>
+
+                            {/* Classification */}
+                            <div>
+                                <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Classification</h3>
+                                <div className="grid grid-cols-3 gap-4">
+                                    <AssetDetailField label="Category" value={viewingAsset.category} />
+                                    <AssetDetailField label="Sub Category" value={viewingAsset.sub_category} />
+                                    <AssetDetailField label="Asset Group" value={viewingAsset.asset_group} />
+                                    <AssetDetailField label="Asset Type" value={viewingAsset.asset_type} />
+                                    <AssetDetailField label="Make" value={viewingAsset.make} />
+                                    <AssetDetailField label="Model" value={viewingAsset.model} />
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            {viewingAsset.description && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Description</h3>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-white/80">
+                                        {viewingAsset.description}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Location */}
+                            <div>
+                                <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Location</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <AssetDetailField label="Location ID" value={viewingAsset.location_id} />
+                                    <AssetDetailField label="Unit" value={viewingAsset.unit} />
+                                </div>
+                            </div>
+
+                            {/* Vendor Details */}
+                            {(viewingAsset.vendor_name || viewingAsset.vendor_address) && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Vendor Details</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <AssetDetailField label="Vendor Name" value={viewingAsset.vendor_name} />
+                                        <AssetDetailField label="Vendor Phone" value={viewingAsset.vendor_phone} />
+                                        <AssetDetailField label="Vendor Email" value={viewingAsset.vendor_email} />
+                                        <div className="col-span-2">
+                                            <AssetDetailField label="Vendor Address" value={viewingAsset.vendor_address} />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Purchase Order */}
+                            {viewingAsset.po_no && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Purchase Order</h3>
+                                    <div className="grid grid-cols-4 gap-4">
+                                        <AssetDetailField label="PO Number" value={viewingAsset.po_no} />
+                                        <AssetDetailField label="PO Date" value={viewingAsset.po_date ? new Date(viewingAsset.po_date).toLocaleDateString() : ''} />
+                                        <AssetDetailField label="Quantity" value={viewingAsset.po_quantity} />
+                                        <AssetDetailField label="Value" value={viewingAsset.po_value ? `${viewingAsset.currency} ${viewingAsset.po_value}` : ''} />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Warranty */}
+                            {viewingAsset.asset_warranty === 'yes' && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Warranty</h3>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        <AssetDetailField label="Warranty Period" value={viewingAsset.warranty_period} />
+                                        <AssetDetailField label="Start Date" value={viewingAsset.warranty_start_date ? new Date(viewingAsset.warranty_start_date).toLocaleDateString() : ''} />
+                                        <AssetDetailField label="End Date" value={viewingAsset.warranty_end_date ? new Date(viewingAsset.warranty_end_date).toLocaleDateString() : ''} />
+                                        <AssetDetailField label="Vendor Name" value={viewingAsset.warranty_vendor_name} />
+                                        <AssetDetailField label="Vendor Phone" value={viewingAsset.warranty_vendor_phone} />
+                                        <AssetDetailField label="Vendor Email" value={viewingAsset.warranty_vendor_email} />
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* General Audit Trail */}
+                            {(viewingAsset.created_by_username || viewingAsset.modified_by_username) && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">General Audit Trail</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {viewingAsset.created_by_username && (
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <div className="flex items-center gap-2 text-white/40 text-xs mb-1">
+                                                    <User className="w-3 h-3" />
+                                                    <span>Created By</span>
+                                                </div>
+                                                <div className="text-white font-medium">{viewingAsset.created_by_username}</div>
+                                                <div className="text-white/40 text-xs font-mono mt-1">ID: {viewingAsset.created_by_user_id?.substring(0, 8) || 'N/A'}</div>
+                                            </div>
+                                        )}
+                                        {viewingAsset.modified_by_username && (
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <div className="flex items-center gap-2 text-white/40 text-xs mb-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    <span>Last Modified By</span>
+                                                </div>
+                                                <div className="text-white font-medium">{viewingAsset.modified_by_username}</div>
+                                                <div className="text-white/40 text-xs font-mono mt-1">ID: {viewingAsset.modified_by_user_id?.substring(0, 8) || 'N/A'}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Lifecycle Audit Trail */}
+                            <div>
+                                <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Lifecycle Audit Trail</h3>
+                                <div className="grid grid-cols-3 gap-4">
+                                    {/* Creation */}
+                                    {viewingAsset.creation_by_username && (
+                                        <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+                                            <div className="flex items-center gap-2 text-blue-400 text-xs mb-2 uppercase tracking-wider font-semibold">
+                                                <CheckCircle2 className="w-3 h-3" />
+                                                <span>Creation</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="text-white font-medium text-sm">{viewingAsset.creation_by_username}</div>
+                                                <div className="text-white/40 text-xs font-mono">ID: {viewingAsset.creation_by_user_id?.substring(0, 8) || 'N/A'}</div>
+                                                {viewingAsset.creation_time && (
+                                                    <div className="text-white/40 text-xs mt-2">
+                                                        {new Date(viewingAsset.creation_time).toLocaleString()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {/* Install */}
+                                    {viewingAsset.install_by_username && (
+                                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
+                                            <div className="flex items-center gap-2 text-amber-400 text-xs mb-2 uppercase tracking-wider font-semibold">
+                                                <CheckCircle2 className="w-3 h-3" />
+                                                <span>Installation</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="text-white font-medium text-sm">{viewingAsset.install_by_username}</div>
+                                                <div className="text-white/40 text-xs font-mono">ID: {viewingAsset.install_by_user_id?.substring(0, 8) || 'N/A'}</div>
+                                                {viewingAsset.install_time && (
+                                                    <div className="text-white/40 text-xs mt-2">
+                                                        {new Date(viewingAsset.install_time).toLocaleString()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {/* Deploy */}
+                                    {viewingAsset.deploy_by_username && (
+                                        <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
+                                            <div className="flex items-center gap-2 text-emerald-400 text-xs mb-2 uppercase tracking-wider font-semibold">
+                                                <CheckCircle2 className="w-3 h-3" />
+                                                <span>Deployment</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <div className="text-white font-medium text-sm">{viewingAsset.deploy_by_username}</div>
+                                                <div className="text-white/40 text-xs font-mono">ID: {viewingAsset.deploy_by_user_id?.substring(0, 8) || 'N/A'}</div>
+                                                {viewingAsset.deploy_time && (
+                                                    <div className="text-white/40 text-xs mt-2">
+                                                        {new Date(viewingAsset.deploy_time).toLocaleString()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* System Timestamps */}
+                            <div>
+                                <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">System Information</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                        <div className="flex items-center gap-2 text-white/40 text-xs mb-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>Created At</span>
+                                        </div>
+                                        <div className="text-white text-sm">
+                                            {viewingAsset.created_at ? new Date(viewingAsset.created_at).toLocaleString() : 'N/A'}
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                        <div className="flex items-center gap-2 text-white/40 text-xs mb-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>Updated At</span>
+                                        </div>
+                                        <div className="text-white text-sm">
+                                            {viewingAsset.updated_at ? new Date(viewingAsset.updated_at).toLocaleString() : 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="pt-6 flex justify-end gap-3 border-t border-white/10 mt-6">
+                            <button onClick={() => setShowDetailsModal(false)} className="bg-white text-black px-8 py-3 rounded-xl font-bold hover:bg-neutral-200 transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div >
     );
 }
+
+const AssetDetailField = ({ label, value, badge = false }: { label: string; value: string; badge?: boolean }) => (
+    <div>
+        <div className="text-xs text-white/40 mb-1">{label}</div>
+        <div className={`text-white ${badge ? 'inline-block px-2 py-1 rounded bg-white/10 text-xs uppercase font-mono' : ''}`}>
+            {value || <span className="text-white/20">—</span>}
+        </div>
+    </div>
+);
 
 const FormSection = ({ id, title, children, expandedSection, toggleSection }: { id: string, title: string, children: React.ReactNode, expandedSection: string | null, toggleSection: (id: string) => void }) => (
     <div className="border border-white/10 rounded-xl overflow-hidden bg-white/5">

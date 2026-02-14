@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { userService } from "@/services/users";
 import { authService } from "@/services/auth";
-import { Plus, Search, User, Shield, Trash2, Pencil, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, Search, User, Shield, Trash2, Pencil, X, CheckCircle2, AlertCircle, Hash } from "lucide-react";
 import Link from "next/link";
 
 export default function UsersPage() {
@@ -216,6 +216,10 @@ export default function UsersPage() {
                                             <div>
                                                 <div className="text-white font-medium">{user.full_name || user.username}</div>
                                                 <div className="text-white/40 text-xs">{user.email}</div>
+                                                <div className="flex items-center gap-1 mt-0.5 text-white/30 text-xs font-mono">
+                                                    <Hash className="w-3 h-3" />
+                                                    <span>{user.id}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>

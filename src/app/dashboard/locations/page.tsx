@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { locationService, LocationNode } from "@/services/locations";
 import { masterDataService } from "@/services/master";
-import { Search, MapPin, Plus, Folder, ChevronRight, ChevronDown, Edit2, Trash2, X, Globe, Building, FileDown, Upload } from "lucide-react";
+import { authService } from "@/services/auth";
+import { Search, MapPin, Plus, Folder, ChevronRight, ChevronDown, Edit2, Trash2, X, Globe, Building, FileDown, Upload, Download, Eye, User, Clock } from "lucide-react";
 import { Country, State, City } from 'country-state-city';
 
 export default function LocationsPage() {
@@ -13,11 +14,17 @@ export default function LocationsPage() {
     const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
     const [search, setSearch] = useState("");
     const [uploading, setUploading] = useState(false);
+    const [currentUser, setCurrentUser] = useState<any>(null);
+    const [isAdmin, setIsAdmin] = useState(false);
 
     // Modal State
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [currentLocation, setCurrentLocation] = useState<any>(null);
+    
+    // View Details State
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [viewingLocation, setViewingLocation] = useState<any>(null);
     const [formData, setFormData] = useState({
         name: "",
         country: "",
@@ -35,6 +42,9 @@ export default function LocationsPage() {
     const [cities, setCities] = useState<any[]>([]);
 
     useEffect(() => {
+        const user = authService.getUser();
+        setCurrentUser(user);
+        setIsAdmin(user?.role === 'super_admin' || user?.role === 'executive');
         loadData();
     }, []);
 
@@ -89,6 +99,15 @@ export default function LocationsPage() {
         } catch (err) {
             console.error("Download failed", err);
             alert("Failed to download template.");
+        }
+    };
+
+    const handleExportDump = async () => {
+        try {
+            await masterDataService.exportLocationMasters();
+        } catch (err) {
+            console.error("Export failed", err);
+            alert("Failed to export data.");
         }
     };
 
@@ -266,15 +285,26 @@ export default function LocationsPage() {
                         </div>
 
                         <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => openCreateModal(node.id)} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-emerald-400 transition-colors" title="Add Child">
-                                <Plus className="w-4 h-4" />
+                            <button 
+                                onClick={() => { setViewingLocation(node); setShowDetailsModal(true); }} 
+                                className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-blue-400 transition-colors" 
+                                title="View Details"
+                            >
+                                <Eye className="w-4 h-4" />
                             </button>
-                            <button onClick={() => openEditModal(node)} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-blue-400 transition-colors" title="Edit">
-                                <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => handleDelete(node.id, node.name)} className="p-2 hover:bg-red-500/20 rounded-lg text-white/60 hover:text-red-400 transition-colors" title="Delete">
-                                <Trash2 className="w-4 h-4" />
-                            </button>
+                            {isAdmin && (
+                                <>
+                                    <button onClick={() => openCreateModal(node.id)} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-emerald-400 transition-colors" title="Add Child">
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => openEditModal(node)} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-amber-400 transition-colors" title="Edit">
+                                        <Edit2 className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => handleDelete(node.id, node.name)} className="p-2 hover:bg-red-500/20 rounded-lg text-white/60 hover:text-red-400 transition-colors" title="Delete">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -297,34 +327,46 @@ export default function LocationsPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={handleDownloadTemplate}
-                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors"
-                        title="Download Template"
+                        onClick={handleExportDump}
+                        className="p-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors"
+                        title="Export All Data (Dump)"
                     >
-                        <FileDown className="w-5 h-5" />
+                        <Download className="w-5 h-5" />
                     </button>
 
-                    <div className="relative">
-                        <input
-                            type="file"
-                            id="loc-upload"
-                            accept=".csv"
-                            className="hidden"
-                            onChange={handleFileUpload}
-                            disabled={uploading}
-                        />
-                        <label
-                            htmlFor="loc-upload"
-                            className={`p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors cursor-pointer flex items-center justify-center ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            title="Import CSV"
-                        >
-                            <Upload className="w-5 h-5" />
-                        </label>
-                    </div>
+                    {isAdmin && (
+                        <>
+                            <button
+                                onClick={handleDownloadTemplate}
+                                className="p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors"
+                                title="Download Template"
+                            >
+                                <FileDown className="w-5 h-5" />
+                            </button>
 
-                    <button onClick={() => openCreateModal("")} className="bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors flex items-center gap-2">
-                        <Plus className="w-4 h-4" /> Add Root Location
-                    </button>
+                            <div className="relative">
+                                <input
+                                    type="file"
+                                    id="loc-upload"
+                                    accept=".csv"
+                                    className="hidden"
+                                    onChange={handleFileUpload}
+                                    disabled={uploading}
+                                />
+                                <label
+                                    htmlFor="loc-upload"
+                                    className={`p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white transition-colors cursor-pointer flex items-center justify-center ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    title="Import CSV"
+                                >
+                                    <Upload className="w-5 h-5" />
+                                </label>
+                            </div>
+
+                            <button onClick={() => openCreateModal("")} className="bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors flex items-center gap-2">
+                                <Plus className="w-4 h-4" /> Add Root Location
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -444,9 +486,125 @@ export default function LocationsPage() {
                     </div>
                 </div>
             )}
+
+            {/* View Details Modal */}
+            {showDetailsModal && viewingLocation && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-[#111] border border-white/10 rounded-3xl w-full max-w-3xl p-8 relative animate-in zoom-in-50 duration-200 max-h-[90vh] overflow-y-auto">
+                        <button onClick={() => setShowDetailsModal(false)} className="absolute top-6 right-6 p-2 bg-white/5 hover:bg-white/10 rounded-full text-white/60 hover:text-white transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                        <h2 className="text-2xl font-serif text-white mb-6 flex items-center gap-3">
+                            <MapPin className="w-8 h-8 text-blue-400" />
+                            Location Details
+                        </h2>
+                        
+                        <div className="space-y-6">
+                            {/* Location ID */}
+                            <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
+                                <div className="text-xs text-blue-400 mb-1 font-semibold">Location ID</div>
+                                <div className="text-white font-mono text-lg">{viewingLocation.location_id || viewingLocation.id}</div>
+                            </div>
+
+                            {/* Basic Information */}
+                            <div>
+                                <h3 className="text-white/60 text-sm font-semibold mb-3">Basic Information</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <LocationDetailField label="Name" value={viewingLocation.name} />
+                                    <LocationDetailField label="Unit" value={viewingLocation.unit} />
+                                    <LocationDetailField label="Zone" value={viewingLocation.zone} />
+                                </div>
+                            </div>
+
+                            {/* Geographic Details */}
+                            <div>
+                                <h3 className="text-white/60 text-sm font-semibold mb-3">Geographic Details</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <LocationDetailField label="Country" value={viewingLocation.country} />
+                                    <LocationDetailField label="State" value={viewingLocation.state} />
+                                    <LocationDetailField label="City" value={viewingLocation.city} />
+                                </div>
+                            </div>
+
+                            {/* Address */}
+                            {viewingLocation.address && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3">Address</h3>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-white/80">
+                                        {viewingLocation.address}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Parent Location */}
+                            {viewingLocation.parent_location && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3">Hierarchy</h3>
+                                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                        <div className="text-xs text-white/40 mb-1">Parent Location</div>
+                                        <div className="text-white font-mono">{viewingLocation.parent_location}</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Audit Information */}
+                            {(viewingLocation.created_by_username || viewingLocation.modified_by_username) && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3">Audit Trail</h3>
+                                    <div className="space-y-3">
+                                        {viewingLocation.created_by_username && (
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <div className="flex items-center gap-2 text-white/40 text-xs mb-1">
+                                                    <User className="w-3 h-3" />
+                                                    <span>Created By</span>
+                                                </div>
+                                                <div className="text-white font-medium">{viewingLocation.created_by_username}</div>
+                                                <div className="text-white/40 text-xs font-mono mt-1">ID: {viewingLocation.created_by_user_id}</div>
+                                                {viewingLocation.created_at && (
+                                                    <div className="text-white/40 text-xs mt-1">
+                                                        {new Date(viewingLocation.created_at).toLocaleString()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        {viewingLocation.modified_by_username && (
+                                            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                                                <div className="flex items-center gap-2 text-white/40 text-xs mb-1">
+                                                    <Clock className="w-3 h-3" />
+                                                    <span>Last Modified By</span>
+                                                </div>
+                                                <div className="text-white font-medium">{viewingLocation.modified_by_username}</div>
+                                                <div className="text-white/40 text-xs font-mono mt-1">ID: {viewingLocation.modified_by_user_id}</div>
+                                                {viewingLocation.updated_at && (
+                                                    <div className="text-white/40 text-xs mt-1">
+                                                        {new Date(viewingLocation.updated_at).toLocaleString()}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="pt-6 flex justify-end">
+                            <button onClick={() => setShowDetailsModal(false)} className="bg-white text-black px-8 py-3 rounded-xl font-bold hover:bg-neutral-200 transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
+
+const LocationDetailField = ({ label, value }: { label: string; value: string }) => (
+    <div>
+        <div className="text-xs text-white/40 mb-1">{label}</div>
+        <div className="text-white">{value || <span className="text-white/20">—</span>}</div>
+    </div>
+);
 
 const InputField = ({ label, value, onChange, required = false, placeholder = "" }: any) => (
     <div>

@@ -86,6 +86,11 @@ export const masterDataService = {
         return res.data;
     },
 
+    updateAssetMaster: async (modelId: string, data: any) => {
+        const res = await api.put(`/masters/asset-masters/${modelId}`, data);
+        return res.data;
+    },
+
     // --- Location Masters ---
     getLocationMasters: async (params?: any) => {
         const res = await api.get("/masters/location-masters", { params });
@@ -99,6 +104,11 @@ export const masterDataService = {
 
     createLocationMaster: async (data: any) => {
         const res = await api.post("/masters/location-masters", data);
+        return res.data;
+    },
+
+    updateLocationMaster: async (locationId: string, data: any) => {
+        const res = await api.put(`/masters/location-masters/${locationId}`, data);
         return res.data;
     },
 
@@ -134,6 +144,30 @@ export const masterDataService = {
         const link = document.createElement('a');
         link.href = url;
         link.setAttribute('download', `${type}_template.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
+    exportAssetMasters: async () => {
+        const res = await api.get('/masters/export/asset-masters', { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().toISOString().split('T')[0];
+        link.setAttribute('download', `asset_masters_export_${timestamp}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    },
+
+    exportLocationMasters: async () => {
+        const res = await api.get('/masters/export/location-masters', { responseType: 'blob' });
+        const url = window.URL.createObjectURL(new Blob([res.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        const timestamp = new Date().toISOString().split('T')[0];
+        link.setAttribute('download', `location_masters_export_${timestamp}.csv`);
         document.body.appendChild(link);
         link.click();
         link.remove();
