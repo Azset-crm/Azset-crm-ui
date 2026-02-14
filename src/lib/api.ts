@@ -1,6 +1,11 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_API;
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_API || "https://api.modelix.world/api/v1";
+
+// Log for debugging (remove in production)
+if (typeof window !== "undefined") {
+    console.log("API Base URL:", API_URL);
+}
 
 export const api = axios.create({
     baseURL: API_URL,

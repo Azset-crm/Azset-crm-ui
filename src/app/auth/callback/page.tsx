@@ -14,6 +14,9 @@ function AuthCallbackContent() {
         const token = searchParams.get("token");
         const errorParam = searchParams.get("error");
 
+        console.log("Auth callback - Token:", token ? "Present" : "None");
+        console.log("Auth callback - Error:", errorParam);
+
         if (errorParam) {
             setError(decodeURIComponent(errorParam));
             setTimeout(() => router.push("/login"), 3000);
@@ -27,6 +30,7 @@ function AuthCallbackContent() {
             // Fetch user details and redirect
             authService.me()
                 .then((user) => {
+                    console.log("User authenticated:", user.username);
                     localStorage.setItem("user", JSON.stringify(user));
                     router.push("/dashboard");
                 })
@@ -36,6 +40,7 @@ function AuthCallbackContent() {
                     setTimeout(() => router.push("/login"), 3000);
                 });
         } else {
+            console.warn("No token or error parameter received, redirecting to login");
             router.push("/login");
         }
     }, [router, searchParams]);
