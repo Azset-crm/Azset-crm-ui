@@ -1,4 +1,6 @@
-Country,State,City,Unit,Name,Address,Floor,Room,Zone,Parent Location,Latitude,Longitude
-United States,California,San Francisco,Headquarters,SF Headquarters,123 Market Street San Francisco CA 94105,Multiple,,,37.7749,-122.4194
-United States,California,San Francisco,Headquarters,SF HQ - Executive Floor,123 Market Street Floor 20 San Francisco CA 94105,20,,,SF Headquarters,37.7749,-122.4194
-United States,California,San Francisco,Headquarters,SF HQ - IT Department,123 Market Street Floor 15 San Francisco CA 94105,15,,IT Zone,SF Headquarters,37.7749,-122.4194
+Country,State,City,Unit,Name,Address,Zone,ParentLocation
+United States,California,San Francisco,Headquarters,SF Headquarters,123 Market Street San Francisco CA 94105,,
+United States,California,San Francisco,Headquarters,SF HQ - Executive Floor,123 Market Street Floor 20 San Francisco CA 94105,,SF Headquarters
+United States,California,San Francisco,Headquarters,SF HQ - IT Department,123 Market Street Floor 15 San Francisco CA 94105,IT Zone,SF Headquarters
+United States,New York,New York,Branch Office,NYC Branch Office,789 Fifth Avenue New York NY 10022,,
+Canada,Ontario,Toronto,Main Office,Toronto Main Office,100 King Street West Toronto ON M5X 1C7,,

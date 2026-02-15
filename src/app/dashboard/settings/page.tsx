@@ -134,8 +134,8 @@ export default function SettingsPage() {
                             <div>
                                 <label className="block text-xs text-white/40 mb-1">Role</label>
                                 <div className="text-white font-medium capitalize">
-                                    {user?.role === 'super_admin' ? 'Super Admin' : 
-                                     user?.role === 'executive' ? 'Admin' : 
+                                    {user?.role === 'SUPER_ADMIN' ? 'Super Admin' : 
+                                     user?.role === 'EXECUTIVE' ? 'Admin' : 
                                      user?.role || 'User'}
                                 </div>
                             </div>

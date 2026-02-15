@@ -55,7 +55,7 @@ export const authService = {
             email: userData.email,
             password: userData.password,
             full_name: userData.fullName,
-            role: "user"
+            role: "USER"
         };
         const res = await api.post("/auth/register", payload);
         if (res.data.access_token) {

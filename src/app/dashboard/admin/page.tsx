@@ -18,9 +18,9 @@ export default function AdminDashboardPage() {
     const [error, setError] = useState("");
 
     useEffect(() => {
-        // Check if user has super_admin role
+        // Check if user has SUPER_ADMIN role
         const user = authService.getUser();
-        if (!user || user.role !== 'super_admin') {
+        if (!user || user.role !== 'SUPER_ADMIN') {
             setError("Access Denied: Only Super Admins can access this page.");
             setLoading(false);
             return;

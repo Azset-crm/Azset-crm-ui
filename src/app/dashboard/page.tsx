@@ -43,10 +43,10 @@ export default function DashboardPage() {
     };
 
     return (
-        <div className="p-2 pb-10 min-h-screen fade-in">
+        <div className="p-4 md:p-8 pb-20 min-h-screen fade-in">
             <DashboardHeader />
 
-            <div className="max-w-7xl px-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="max-w-7xl px-0 md:px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
 
                 {/* Left Column (Main Content) */}
                 <div className="lg:col-span-8 space-y-10">

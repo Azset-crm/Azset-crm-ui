@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, MapPin, Zap, AlertCircle, CheckCircle2, Plus, X, FileDown, ArrowRight, ChevronDown, ChevronUp, Pencil, Trash2, Eye, User, Clock } from "lucide-react";
 import { assetService } from "@/services/assets";
 import { masterDataService } from "@/services/master";
+import { userService } from "@/services/users";
 import { HierarchySelect } from "@/components/dashboard/hierarchy-select";
 import { LocationHierarchySelect } from "@/components/dashboard/location-hierarchy-select";
 import { TemplateDownload } from "@/components/dashboard/template-download";
@@ -79,14 +80,19 @@ export default function AssetsPage() {
         insurance_value: "",
         insurance_start_date: "",
         insurance_end_date: "",
+        
+        // User Deployment
+        deployed_to_user_id: "",
     });
 
     const [locations, setLocations] = useState<any[]>([]);
+    const [users, setUsers] = useState<any[]>([]);
     const [expandedSection, setExpandedSection] = useState<string | null>("core");
 
     useEffect(() => {
         loadAssets();
         loadLocations();
+        loadUsers();
     }, []);
 
     const loadAssets = async () => {
@@ -110,6 +116,15 @@ export default function AssetsPage() {
         }
     };
 
+    const loadUsers = async () => {
+        try {
+            const data = await userService.getUsersForDropdown();
+            setUsers(data || []);
+        } catch (err) {
+            console.error("Failed to load users", err);
+        }
+    };
+
     const [isEditing, setIsEditing] = useState(false);
     const [editId, setEditId] = useState<string | null>(null);
     const [originalModelId, setOriginalModelId] = useState<string | null>(null);
@@ -123,7 +138,8 @@ export default function AssetsPage() {
             invoice_no: "", invoice_date: "", invoice_quantity: "", invoice_value: "",
             asset_warranty: "no", warranty_period: "", warranty_start_date: "", warranty_end_date: "", warranty_vendor_name: "", warranty_vendor_phone: "", warranty_vendor_email: "", amc: "no",
             insurance_vendor_name: "", insurance_value: "", insurance_start_date: "", insurance_end_date: "",
-            category: "", sub_category: "", asset_group: "", asset_type: "", make: "", model: "", description: ""
+            category: "", sub_category: "", asset_group: "", asset_type: "", make: "", model: "", description: "",
+            deployed_to_user_id: ""
         });
         setIsEditing(false);
         setEditId(null);
@@ -183,7 +199,7 @@ export default function AssetsPage() {
                     // For creates, remove null values for fields that can cause validation errors
                     if (!isEditing) {
                         const fieldsToRemoveIfNull = [
-                            'location_id', // UUID field
+                            'location_id', 'deployed_to_user_id', // UUID fields
                             'vendor_email', 'warranty_vendor_email', // Email fields
                             'po_date', 'grn_date', 'invoice_date', // Date fields
                             'warranty_start_date', 'warranty_end_date',
@@ -216,7 +232,7 @@ export default function AssetsPage() {
             console.error("Failed to save asset", err);
             console.error("Error response:", err?.response?.data);
             console.error("Full error detail:", JSON.stringify(err?.response?.data?.detail, null, 2));
-            
+
             // Extract validation errors if available
             let errorMessage = "Error saving asset";
             if (err?.response?.data?.detail) {
@@ -236,7 +252,7 @@ export default function AssetsPage() {
             } else if (err.message) {
                 errorMessage = err.message;
             }
-            
+
             alert(errorMessage);
         }
     };
@@ -280,6 +296,8 @@ export default function AssetsPage() {
             invoice_quantity: asset.invoice_quantity ?? "",
             invoice_value: asset.invoice_value ?? "",
             insurance_value: asset.insurance_value ?? "",
+            // User deployment field
+            deployed_to_user_id: asset.deployed_to_user_id || "",
         };
 
         setNewAsset({ ...newAsset, ...sanitizedAsset });
@@ -357,20 +375,20 @@ export default function AssetsPage() {
     };
 
     return (
-        <div className="p-8 pb-20 fade-in relative">
-            <div className="flex items-center justify-between mb-8">
+        <div className="p-4 md:p-8 pb-20 fade-in relative">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 md:mb-8">
                 <div>
-                    <h1 className="text-3xl font-serif text-white mb-2">Asset Inventory</h1>
+                    <h1 className="text-2xl md:text-3xl font-serif text-white mb-2">Asset Inventory</h1>
                     <p className="text-white/40 text-sm">Manage portfolio of {assets.length} assets.</p>
                 </div>
-                <div className="flex gap-3">
-                    <button onClick={() => setShowTemplates(!showTemplates)} className="bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors flex items-center gap-2">
+                <div className="flex flex-wrap gap-2 md:gap-3 w-full md:w-auto">
+                    <button onClick={() => setShowTemplates(!showTemplates)} className="flex-1 md:flex-none justify-center bg-white/5 border border-white/10 text-white px-3 md:px-4 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors flex items-center gap-2 text-sm">
                         <FileDown className="w-4 h-4" /> Templates
                     </button>
-                    <button onClick={() => setShowUploadModal(true)} className="bg-white/5 border border-white/10 text-white px-4 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors flex items-center gap-2">
-                        <ArrowRight className="w-4 h-4 rotate-90" /> Import CSV
+                    <button onClick={() => setShowUploadModal(true)} className="flex-1 md:flex-none justify-center bg-white/5 border border-white/10 text-white px-3 md:px-4 py-3 rounded-xl font-semibold hover:bg-white/10 transition-colors flex items-center gap-2 text-sm">
+                        <ArrowRight className="w-4 h-4 rotate-90" /> Import
                     </button>
-                    <button onClick={() => setShowCreateModal(true)} className="bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors flex items-center gap-2">
+                    <button onClick={() => setShowCreateModal(true)} className="flex-1 md:flex-none justify-center bg-white text-black px-4 md:px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors flex items-center gap-2 text-sm">
                         <Plus className="w-4 h-4" /> Add Asset
                     </button>
                 </div>
@@ -379,14 +397,14 @@ export default function AssetsPage() {
             {showTemplates && <div className="mb-8 animate-fade-in-down"><TemplateDownload /></div>}
 
             {/* Filters */}
-            <div className="flex items-center gap-4 mb-8">
-                <div className="relative flex-1 max-w-md">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 mb-6 md:mb-8">
+                <div className="relative flex-1">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                     <input type="text" placeholder="Search..." className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white focus:border-white/30 outline-none transition-colors" />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
                     {['creation', 'install', 'deploy', 'all'].map((type) => (
-                        <button key={type} onClick={() => assetService.downloadDump(type as any)} className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors text-xs uppercase tracking-wider font-semibold">
+                        <button key={type} onClick={() => assetService.downloadDump(type as any)} className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-colors text-xs uppercase tracking-wider font-semibold whitespace-nowrap">
                             Dump {type}
                         </button>
                     ))}
@@ -395,26 +413,27 @@ export default function AssetsPage() {
 
             {/* Asset List */}
             {loading ? <div className="text-white/40 text-center py-20">Loading...</div> : (
-                <div className="space-y-4 overflow-x-auto pb-4">
-                    <div className="min-w-[800px] space-y-4">
+                <div className="space-y-4 pb-4">
+                    <div className="space-y-4">
                         {assets.map((asset) => (
-                            <div key={asset.id} className="group flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-2xl hover:border-white/20 hover:bg-white/10 transition-all">
-                                <div className="flex items-center gap-6">
-                                    <div className="w-12 h-12 rounded-full flex items-center justify-center border bg-emerald-500/10 border-emerald-500/20 text-emerald-500">
-                                        <Zap className="w-5 h-5" />
+                            <div key={asset.id} className="group flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 bg-white/5 border border-white/5 rounded-2xl hover:border-white/20 hover:bg-white/10 transition-all gap-4">
+                                <div className="flex items-start md:items-center gap-4 md:gap-6">
+                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full flex shrink-0 items-center justify-center border bg-emerald-500/10 border-emerald-500/20 text-emerald-500">
+                                        <Zap className="w-4 h-4 md:w-5 md:h-5" />
                                     </div>
                                     <div>
-                                        <h3 className="text-white font-medium text-lg">{asset.tag_id} <span className="text-white/40 text-sm font-normal">({asset.model_id})</span></h3>
-                                        <div className="flex items-center gap-2 text-white/40 text-sm mt-1">
+                                        <h3 className="text-white font-medium text-base md:text-lg break-all">{asset.tag_id} <span className="text-white/40 text-xs md:text-sm font-normal block md:inline">({asset.model_id})</span></h3>
+                                        <div className="flex flex-wrap items-center gap-2 text-white/40 text-xs md:text-sm mt-1">
                                             <span className="font-mono">{asset.serial_no}</span>
-                                            <span>•</span>
+                                            <span className="hidden md:inline">•</span>
                                             <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {asset.location_id}</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-12 text-right">
-                                    <div>
-                                        <div className="text-white/40 text-xs mb-1 uppercase tracking-wider">Lifecycle</div>
+
+                                <div className="flex items-center justify-between md:justify-end gap-x-4 md:gap-12 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t border-white/5 md:border-0 rule">
+                                    <div className="flex flex-col md:items-end">
+                                        <div className="text-white/40 text-[10px] md:text-xs mb-1 uppercase tracking-wider">Lifecycle</div>
                                         <div className="flex items-center gap-2">
                                             <span className={`px-2 py-1 rounded text-xs font-mono uppercase ${asset.asset_status === 'creation' ? 'bg-blue-500/20 text-blue-400' :
                                                 asset.asset_status === 'install' ? 'bg-amber-500/20 text-amber-400' :
@@ -427,7 +446,7 @@ export default function AssetsPage() {
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2 md:gap-3">
                                         <button
                                             onClick={() => { setViewingAsset(asset); setShowDetailsModal(true); }}
                                             className="p-2 hover:bg-blue-500/20 rounded-full text-white/40 hover:text-blue-400 transition-colors"
@@ -533,6 +552,28 @@ export default function AssetsPage() {
                                                 <option value="deploy">Deploy</option>
                                             </select>
                                         </div>
+
+                                        {/* Conditional: Show Deployed To User dropdown when lifecycle is Deploy */}
+                                        {newAsset.asset_status === "deploy" && (
+                                            <div>
+                                                <label className="block text-xs font-semibold text-white/60 mb-2">
+                                                    <User className="inline w-3 h-3 mr-1" />
+                                                    Deployed To User
+                                                </label>
+                                                <select 
+                                                    className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none outline-none text-sm" 
+                                                    value={newAsset.deployed_to_user_id || ""} 
+                                                    onChange={(e) => setNewAsset({ ...newAsset, deployed_to_user_id: e.target.value })}
+                                                >
+                                                    <option value="">Select User (Optional)</option>
+                                                    {users.map((user: any) => (
+                                                        <option key={user.id} value={user.id}>
+                                                            {user.full_name || user.username} ({user.email})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        )}
 
                                         <div className="col-span-1 md:col-span-3">
                                             <LocationHierarchySelect
@@ -870,6 +911,25 @@ export default function AssetsPage() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Deployed To User - Show only if asset is deployed */}
+                            {viewingAsset.asset_status === 'deploy' && viewingAsset.deployed_to_user_id && (
+                                <div>
+                                    <h3 className="text-white/60 text-sm font-semibold mb-3 uppercase tracking-wider">Deployed To</h3>
+                                    <div className="bg-purple-500/5 border border-purple-500/20 rounded-xl p-4">
+                                        <div className="flex items-center gap-2 text-purple-400 text-xs mb-2 uppercase tracking-wider font-semibold">
+                                            <User className="w-3 h-3" />
+                                            <span>Assigned User</span>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className="text-white/40 text-xs font-mono">User ID: {viewingAsset.deployed_to_user_id?.substring(0, 8) || 'N/A'}</div>
+                                            <div className="text-white/60 text-xs mt-2">
+                                                This asset has been deployed to a specific user
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* System Timestamps */}
                             <div>

@@ -20,8 +20,8 @@ const allNavItems: NavItem[] = [
     { label: "Analytics", icon: PieChart, href: "/dashboard/analytics" },
     { label: "Asset Master", icon: Database, href: "/dashboard/data" },
     { label: "Location Master", icon: MapPin, href: "/dashboard/locations" },
-    { label: "Users", icon: User, href: "/dashboard/users", roleRequired: "super_admin" },
-    { label: "Admin", icon: Shield, href: "/dashboard/admin", roleRequired: "super_admin" },
+    { label: "Users", icon: User, href: "/dashboard/users", roleRequired: "SUPER_ADMIN" },
+    { label: "Admin", icon: Shield, href: "/dashboard/admin", roleRequired: "SUPER_ADMIN" },
     { label: "Settings", icon: Settings, href: "/dashboard/settings" },
 ];
 

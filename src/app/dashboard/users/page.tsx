@@ -28,9 +28,9 @@ export default function UsersPage() {
     });
 
     useEffect(() => {
-        // Check if user has super_admin role
+        // Check if user has SUPER_ADMIN role
         const user = authService.getUser();
-        if (!user || user.role !== 'super_admin') {
+        if (!user || user.role !== 'SUPER_ADMIN') {
             setAccessDenied(true);
             setLoading(false);
             return;
@@ -44,7 +44,7 @@ export default function UsersPage() {
             const data = await userService.getUsers();
             console.log("API Response:", data);
             console.log("Type of data:", typeof data, Array.isArray(data));
-            
+
             // Handle both array response and paginated response
             if (Array.isArray(data)) {
                 console.log("Setting users from array:", data.length);
@@ -156,21 +156,21 @@ export default function UsersPage() {
     ) : [];
 
     return (
-        <div className="p-8 pb-20 fade-in">
-            <div className="flex items-center justify-between mb-8">
+        <div className="p-4 md:p-8 pb-20 fade-in">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 md:mb-8">
                 <div>
-                    <h1 className="text-3xl font-serif text-white mb-2">User Management</h1>
+                    <h1 className="text-2xl md:text-3xl font-serif text-white mb-2">User Management</h1>
                     <p className="text-white/40 text-sm">
                         {loading ? 'Loading users...' : `Manage access and roles for ${Array.isArray(users) ? users.length : 0} users.`}
                     </p>
                 </div>
-                <button onClick={openCreateModal} className="bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors flex items-center gap-2">
+                <button onClick={openCreateModal} className="w-full md:w-auto justify-center bg-white text-black px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors flex items-center gap-2">
                     <Plus className="w-4 h-4" /> Add User
                 </button>
             </div>
 
             {/* Search & Filter */}
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-4 mb-6 md:mb-8">
                 <div className="relative flex-1 max-w-md">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
                     <input
@@ -195,77 +195,68 @@ export default function UsersPage() {
                     </p>
                 </div>
             ) : (
-                <div className="overflow-hidden border border-white/10 rounded-2xl bg-white/5">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-white/10 bg-white/5">
-                                <th className="p-4 text-xs font-semibold text-white/40 uppercase tracking-wider">User</th>
-                                <th className="p-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Role</th>
-                                <th className="p-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Status</th>
-                                <th className="p-4 text-xs font-semibold text-white/40 uppercase tracking-wider text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                            {filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-white/5 transition-colors group">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center text-white font-bold border border-white/10">
-                                                {user.username.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <div className="text-white font-medium">{user.full_name || user.username}</div>
-                                                <div className="text-white/40 text-xs">{user.email}</div>
-                                                <div className="flex items-center gap-1 mt-0.5 text-white/30 text-xs font-mono">
-                                                    <Hash className="w-3 h-3" />
-                                                    <span>{user.id}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-2">
-                                            {user.role === 'super_admin' ? (
-                                                <Shield className="w-3 h-3 text-red-400" />
-                                            ) : user.role === 'executive' ? (
-                                                <Shield className="w-3 h-3 text-amber-400" />
-                                            ) : (
-                                                <User className="w-3 h-3 text-blue-400" />
-                                            )}
-                                            <span className={`text-sm ${
-                                                user.role === 'super_admin' ? 'text-red-400' : 
-                                                user.role === 'executive' ? 'text-amber-400' : 
-                                                'text-blue-400'
-                                            }`}>
-                                                {user.role === 'super_admin' ? 'Super Admin' : 
-                                                 user.role === 'executive' ? 'Admin' : 
-                                                 'User'}
+                <div className="space-y-4">
+                    {/* PC Header (Hidden on Mobile) */}
+                    <div className="hidden md:flex px-6 py-2 text-xs font-semibold text-white/40 uppercase tracking-wider">
+                        <div className="flex-1">User</div>
+                        <div className="w-40">Role</div>
+                        <div className="w-32">Status</div>
+                        <div className="w-24 text-right">Actions</div>
+                    </div>
+
+                    <div className="space-y-4">
+                        {filteredUsers.map((user) => (
+                            <div key={user.id} className="group flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 bg-white/5 border border-white/5 rounded-2xl hover:border-white/20 hover:bg-white/10 transition-all gap-4">
+                                <div className="flex-1 flex items-center gap-4">
+                                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex shrink-0 items-center justify-center text-white font-bold border border-white/10">
+                                        {user.username.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <div className="text-white font-medium truncate">{user.full_name || user.username}</div>
+                                        <div className="text-white/40 text-xs truncate">{user.email}</div>
+                                        <div className="flex md:hidden items-center gap-2 mt-2">
+                                            <span className={`text-xs ${user.role === 'SUPER_ADMIN' ? 'text-red-400' : user.role === 'EXECUTIVE' ? 'text-amber-400' : user.role === 'ALLOCATED_USER' ? 'text-purple-400' : 'text-blue-400'}`}>
+                                                {user.role === 'SUPER_ADMIN' ? 'Super Admin' : user.role === 'EXECUTIVE' ? 'Admin' : user.role === 'ALLOCATED_USER' ? 'Allocated User' : 'User'}
+                                            </span>
+                                            <span className="text-white/20">•</span>
+                                            <span className={`text-xs ${user.is_active ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                {user.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${user.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                            {user.is_active ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                                            {user.is_active ? 'Active' : 'Inactive'}
+                                    </div>
+                                </div>
+
+                                {/* Desktop Columns */}
+                                <div className="hidden md:block w-40">
+                                    <div className="flex items-center gap-2">
+                                        {user.role === 'SUPER_ADMIN' ? <Shield className="w-3 h-3 text-red-400" /> : user.role === 'EXECUTIVE' ? <Shield className="w-3 h-3 text-amber-400" /> : user.role === 'ALLOCATED_USER' ? <User className="w-3 h-3 text-purple-400" /> : <User className="w-3 h-3 text-blue-400" />}
+                                        <span className={`text-sm ${user.role === 'SUPER_ADMIN' ? 'text-red-400' : user.role === 'EXECUTIVE' ? 'text-amber-400' : user.role === 'ALLOCATED_USER' ? 'text-purple-400' : 'text-blue-400'}`}>
+                                            {user.role === 'SUPER_ADMIN' ? 'Super Admin' : user.role === 'EXECUTIVE' ? 'Admin' : user.role === 'ALLOCATED_USER' ? 'Allocated User' : 'User'}
                                         </span>
-                                    </td>
-                                    <td className="p-4 text-right">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => openEditModal(user)} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Edit">
-                                                <Pencil className="w-4 h-4" />
-                                            </button>
-                                            <button onClick={() => handleDelete(user.id, user.username)} className="p-2 hover:bg-red-500/20 rounded-lg text-white/60 hover:text-red-400 transition-colors" title="Delete">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {filteredUsers.length === 0 && (
-                        <div className="p-8 text-center text-white/40">No users found matching your search.</div>
-                    )}
+                                    </div>
+                                </div>
+
+                                <div className="hidden md:block w-32">
+                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${user.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                        {user.is_active ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                                        {user.is_active ? 'Active' : 'Inactive'}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between md:justify-end gap-2 w-full md:w-24 mt-4 md:mt-0 pt-4 md:pt-0 border-t border-white/5 md:border-0">
+                                    <div className="md:hidden text-white/40 text-xs font-mono">ID: {user.id.substring(0, 8)}</div>
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={() => openEditModal(user)} className="p-2 hover:bg-white/10 rounded-lg text-white/60 hover:text-white transition-colors" title="Edit">
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button onClick={() => handleDelete(user.id, user.username)} className="p-2 hover:bg-red-500/20 rounded-lg text-white/60 hover:text-red-400 transition-colors" title="Delete">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
 
@@ -325,9 +316,10 @@ export default function UsersPage() {
                                         value={formData.role}
                                         onChange={e => setFormData({ ...formData, role: e.target.value })}
                                     >
-                                        <option value="user">User (Normal)</option>
-                                        <option value="executive">Admin (Executive)</option>
-                                        <option value="super_admin">Super Admin</option>
+                                        <option value="USER">User (Normal)</option>
+                                        <option value="ALLOCATED_USER">Allocated User</option>
+                                        <option value="EXECUTIVE">Admin (Executive)</option>
+                                        <option value="SUPER_ADMIN">Super Admin</option>
                                     </select>
                                 </div>
                                 <div>

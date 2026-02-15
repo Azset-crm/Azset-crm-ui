@@ -34,7 +34,7 @@ export default function DataManagementPage() {
     useEffect(() => {
         const user = authService.getUser();
         setCurrentUser(user);
-        setIsAdmin(user?.role === 'super_admin' || user?.role === 'executive');
+        setIsAdmin(user?.role === 'SUPER_ADMIN' || user?.role === 'EXECUTIVE');
         loadData();
     }, []);
 

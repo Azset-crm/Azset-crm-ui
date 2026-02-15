@@ -42,5 +42,11 @@ export const userService = {
     getUserByUsername: async (username: string) => {
         const res = await api.get(`/users/username/${username}`);
         return res.data;
+    },
+
+    // Get all active users for dropdown
+    getUsersForDropdown: async () => {
+        const res = await api.get("/users/dropdown/all");
+        return res.data;
     }
 };
